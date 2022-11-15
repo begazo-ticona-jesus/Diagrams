@@ -9,13 +9,12 @@ import android.util.Log;
 import android.view.View;
 
 public class BarDiagram extends View {
-    public double width;
-    public double heignt;
     Paint barPaint;
     Paint textPaint;
     private String xData[]={"Argentina","Bolivia","Brazil","Canada",
-            "Chile","Colombia","Ecuador","Guyana"};
-    private double data[]={20.7,46.6,28.6,14.5,23.4,27.4,32.9,28.3};
+            "Chile","Colombia","Ecuador","Guyana","Peru","China"};
+    private float data[]={20.7f,46.6f,28.6f,14.5f,23.4f,27.4f,32.9f,28.3f,54.9f,10.1f};
+
     public BarDiagram(Context context) {
         super(context);
         init();
@@ -29,37 +28,51 @@ public class BarDiagram extends View {
         init();
     }
 
-    protected double findMaxValue(){
-        double maxValue=0;
+    protected float findMaxValue(){
+        float maxValue=0;
         for(int i = 0; i < data.length; i++)
-            maxValue = (maxValue < data[i]) ? data[i] : maxValue;
+            maxValue = (maxValue < data[i]) ? (float) data[i] : maxValue;
         return maxValue;
     }
 
     protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
-        int paddingH = 80;
-        double HEIGHT = getMeasuredHeight()-paddingH;
+
+        int paddingW = 30;
+        int paddingH = 120;
+        float HEIGHT = getMeasuredHeight()-paddingH;
         //eje Y
-        double maxValue=findMaxValue();
+        float maxValue=findMaxValue();
         int limite = (((int)(maxValue/10)+1)*10);
         Log.d("LINE", "Limite: " + String.valueOf(limite));
-        Log.d("LINE", "Height: " + String.valueOf(getMeasuredHeight()));
         int escala = 5;
         int nLineas = limite/escala + 1;
-        double division = HEIGHT/nLineas;
-        Log.d("LINE", "Division: " + String.valueOf(division));
+        float division = HEIGHT/nLineas;
+
+        //Lines
+        for(int j=nLineas; j>0; j--){
+            canvas.drawLine(paddingW, division*j,
+                    (getMeasuredWidth() - paddingW)+ 20,
+                    division*j, textPaint);
+        }
+
+        //DIBUJAR LOS INDICES
+        for(int i=0; i<nLineas; i++){
+            String medida = String.valueOf(i*escala);
+            canvas.drawText(medida,20, HEIGHT - (i*division) + 5, textPaint);
+        }
+
         //draw bar
-        int paddingBars = 40;
-        double barWidth = (getMeasuredWidth()-paddingBars * 2)/data.length;
+        int paddingBars = 30;
+        float barWidth = (getMeasuredWidth()-paddingBars)/data.length;
         for (int i=0; i<data.length;i++){
-            canvas.drawRect((float) (paddingBars*2 + (barWidth*i)),
-                    (float) (division * ((limite-data[i])/escala+1)),
-                    (float) (paddingBars + barWidth * (i+1)),
-                    limite, barPaint);
-            canvas.rotate((float) -90, (float) (paddingBars + (barWidth/2) + (barWidth*i)), (float) (HEIGHT + paddingH));
-            canvas.drawText(xData[i], (float) (paddingBars + (barWidth/2) + (barWidth*i)), (float) (HEIGHT + paddingH), textPaint);
-            canvas.rotate(90F, (float) (paddingBars + (barWidth/2) + (barWidth*i)), (float) (HEIGHT + paddingH));
+            canvas.drawRect(paddingBars*2 + (barWidth*i),
+                    division * ((limite-data[i])/escala+1),
+                    paddingBars + barWidth * (i+1),
+                    HEIGHT, barPaint);
+            canvas.rotate(-90, paddingBars +(barWidth/2) + (barWidth*i), getMeasuredHeight());
+            canvas.drawText(xData[i], paddingBars + (barWidth/2) + (barWidth*i), getMeasuredHeight()+paddingBars/2, textPaint);
+            canvas.rotate(90, paddingBars + (barWidth/2) + (barWidth*i), getMeasuredHeight());
         }
     }
 
@@ -68,5 +81,6 @@ public class BarDiagram extends View {
         barPaint.setColor(Color.GREEN);
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.YELLOW);
+        textPaint.setTextSize(25);
     }
 }
